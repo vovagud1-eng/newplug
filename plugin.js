@@ -188,32 +188,38 @@
         this.start = function () {};
     }
 
-    function registerPlugin() {
-        if (!window.Lampa) return;
+    // Реєстрація через стандартну систему компонентів Lampa
+    Lampa.Component.add('tizam_years', TizamYearSelect);
+    Lampa.Component.add('tizam_catalog', TizamCatalog);
+    Lampa.Component.add('tizam_player', TizamPlayer);
 
-        Lampa.Component.add('tizam_years', TizamYearSelect);
-        Lampa.Component.add('tizam_catalog', TizamCatalog);
-        Lampa.Component.add('tizam_player', TizamPlayer);
+    // Додавання пункту в головне меню через перехоплення побудови інтерфейсу
+    function addMenuItem() {
+        if ($('#menu_tizam_xxx').length > 0) return;
 
-        Lampa.Menu.add({
-            title: PLUGIN_NAME,
-            icon: '<svg height="24" viewBox="0 0 24 24" width="24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" fill="currentColor"/></svg>',
-            click: function () {
-                Lampa.Activity.push({
-                    title: PLUGIN_NAME + ' — Вибір року',
-                    component: 'tizam_years'
-                });
-            }
-        });
+        if (window.Lampa && Lampa.Menu) {
+            Lampa.Menu.add({
+                id: 'tizam_xxx',
+                title: PLUGIN_NAME,
+                icon: '<svg height="24" viewBox="0 0 24 24" width="24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" fill="currentColor"/></svg>',
+                click: function () {
+                    Lampa.Activity.push({
+                        title: PLUGIN_NAME + ' — Вибір року',
+                        component: 'tizam_years'
+                    });
+                }
+            });
+        }
     }
 
-    if (window.appready) {
-        registerPlugin();
-    } else {
-        Lampa.Listener.follow('app', function (e) {
-            if (e.type === 'ready') registerPlugin();
-        });
-        // Додатковий резервний виклик, якщо appready вже минув
-        setTimeout(registerPlugin, 1000);
-    }
+    // Пробуємо додати одразу і за підпискою на готовність додатку
+    setTimeout(addMenuItem, 500);
+    setTimeout(addMenuItem, 2000);
+
+    Lampa.Listener.follow('app', function (e) {
+        if (e.type === 'ready') {
+            addMenuItem();
+        }
+    });
+
 })();
