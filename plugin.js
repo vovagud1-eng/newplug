@@ -188,38 +188,50 @@
         this.start = function () {};
     }
 
-    // Реєстрація через стандартну систему компонентів Lampa
+    // Реєстрація компонентів у системі Lampa
     Lampa.Component.add('tizam_years', TizamYearSelect);
     Lampa.Component.add('tizam_catalog', TizamCatalog);
     Lampa.Component.add('tizam_player', TizamPlayer);
 
-    // Додавання пункту в головне меню через перехоплення побудови інтерфейсу
-    function addMenuItem() {
-        if ($('#menu_tizam_xxx').length > 0) return;
+    // Універсальний спосіб виклику через налаштування або плагіни
+    function registerPlugin() {
+        if (!window.Lampa) return;
 
-        if (window.Lampa && Lampa.Menu) {
-            Lampa.Menu.add({
-                id: 'tizam_xxx',
-                title: PLUGIN_NAME,
-                icon: '<svg height="24" viewBox="0 0 24 24" width="24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" fill="currentColor"/></svg>',
-                click: function () {
-                    Lampa.Activity.push({
-                        title: PLUGIN_NAME + ' — Вибір року',
-                        component: 'tizam_years'
-                    });
-                }
-            });
+        // 1. Пробуємо додати в меню за стандартним методом
+        if (Lampa.Menu && typeof Lampa.Menu.add === 'function') {
+            try {
+                Lampa.Menu.add({
+                    title: PLUGIN_NAME,
+                    icon: '<svg height="24" viewBox="0 0 24 24" width="24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" fill="currentColor"/></svg>',
+                    click: function () {
+                        Lampa.Activity.push({
+                            title: PLUGIN_NAME + ' — Вибір року',
+                            component: 'tizam_years'
+                        });
+                    }
+                });
+            } catch (err) {}
+        }
+
+        // 2. Дублююча кнопка у розділі "Розширення" або "Головні налаштування" як швидкий доступ
+        if (Lampa.Settings && Lampa.Settings.add) {
+            try {
+                Lampa.Settings.add({
+                    component: 'tizam_years',
+                    name: PLUGIN_NAME,
+                    page: {
+                        title: PLUGIN_NAME
+                    }
+                });
+            } catch (err) {}
         }
     }
 
-    // Пробуємо додати одразу і за підпискою на готовність додатку
-    setTimeout(addMenuItem, 500);
-    setTimeout(addMenuItem, 2000);
+    setTimeout(registerPlugin, 500);
+    setTimeout(registerPlugin, 2000);
 
     Lampa.Listener.follow('app', function (e) {
-        if (e.type === 'ready') {
-            addMenuItem();
-        }
+        if (e.type === 'ready') registerPlugin();
     });
 
 })();
